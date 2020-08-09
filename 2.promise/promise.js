@@ -142,7 +142,3 @@ Promise.defer = Promise.deferred = function () {
     return dfd
 }
 module.exports = Promise
-
-let x = null
-let a = typeof x === 'object' && typeof x !== null || typeof x === 'function'
-console.log(a)
