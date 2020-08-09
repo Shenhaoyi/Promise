@@ -11,14 +11,18 @@ const resolvePromise = (promise2, x, resolve, reject) => {
     }
     //数据类型判断 typeof constructor instanceof toString
     if (typeof x === 'object' && typeof x !== null || typeof x === 'function') {
-        // let called //有的库会成功和失败都调用,防止多次调用，暂时不用了
+        let called //有的库会成功和失败都调用,防止多次调用
         try {
             let then = x.then
             if (typeof then === 'function') { //当前有then方法，姑且认为 x 是个Promise
                 //注意，是返回结果中的 Promise，我们需要对其立即执行 then，才能知道到底是成功的才是失败的，以及得到成功和失败的值，也就是下一个 promise2 的状态由这个返回的 Promise 决定
                 then.call(x, y => {
+                    if (called) return
+                    called = true
                     resolvePromise(promise2, y, resolve, reject) //采用成功结果//递归解析，最终会落到起它分支
                 }, r => {
+                    if (called) return
+                    called = true
                     reject(r) //采用失败结果
                 }) //就是x.then
             } else {
@@ -26,6 +30,8 @@ const resolvePromise = (promise2, x, resolve, reject) => {
                 resolve(x) //直接成功即可
             }
         } catch (err) {
+            if (called) return
+            called = true
             reject(err)
         }
     } else {
@@ -69,6 +75,11 @@ class Promise {
         }
     }
     then(onfulfilled, onrejected) { //then方法就是异步的
+        //可选参数
+        onfulfilled = typeof onfulfilled === 'function' ? onfulfilled : data => data
+        onrejected = typeof onrejected === 'function' ? onrejected : err => {
+            throw err
+        }
         let promise2 = new Promise((resolve, reject) => { //这里的再传给构造函数，立即执行，其实是个闭包，使用箭头函数，使得 this 是现在的这个 Promise，参数都是现在的 Promise, 有点绕
             //前两个条件同步的时候就执行
             if (this.status === FULFILLED) {
