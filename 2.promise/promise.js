@@ -10,8 +10,8 @@ const resolvePromise = (promise2, x, resolve, reject) => {
         return reject(new TypeError('Chaining cycle detected for promise #<Promise>'))
     }
     //数据类型判断 typeof constructor instanceof toString
-    if (typeof x === 'object' && typeof x !== null || typeof x === 'function') {
-        let called //有的库会成功和失败都调用,防止多次调用
+    if (typeof x === 'object' && x !== null || typeof x === 'function') {
+        let called = false //有的库会成功和失败都调用,防止多次调用
         try {
             let then = x.then
             if (typeof then === 'function') { //当前有then方法，姑且认为 x 是个Promise
@@ -91,8 +91,7 @@ class Promise {
                         //resolve(x),不是简单这样写，如果是 Promise 失败的话是要执行reject的
                         resolvePromise(promise2, x, resolve, reject) //显然，promsie2还没被构造完，就要用到它是不可能的
                     } catch (err) {
-                        console.log(err)
-                        reject() //问题来了，这个reject是谁的reject呢？,因为它是个箭头函数，箭头函数的this写在哪。就已经确定了这个this就是写的地方外面的this，这是闭包！！！！
+                        reject(err) //问题来了，这个reject是谁的reject呢？,因为它是个箭头函数，箭头函数的this写在哪。就已经确定了这个this就是写的地方外面的this，这是闭包！！！！
                     }
                 }, 0)
             } else if (this.status === REJECTED) {
@@ -132,4 +131,18 @@ class Promise {
     }
 
 }
+
+//延迟对象，用于测试
+Promise.defer = Promise.deferred = function () {
+    let dfd = {}
+    dfd.promise = new Promise((resolve, reject) => {
+        dfd.resolve = resolve
+        dfd.reject = reject
+    })
+    return dfd
+}
 module.exports = Promise
+
+let x = null
+let a = typeof x === 'object' && typeof x !== null || typeof x === 'function'
+console.log(a)
