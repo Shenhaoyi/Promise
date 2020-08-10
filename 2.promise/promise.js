@@ -132,7 +132,7 @@ class Promise {
 
 }
 
-//延迟对象，用于测试
+//延迟对象/函数
 Promise.defer = Promise.deferred = function () {
     let dfd = {}
     dfd.promise = new Promise((resolve, reject) => {
