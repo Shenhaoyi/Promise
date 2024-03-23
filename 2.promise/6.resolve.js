@@ -14,16 +14,19 @@ Promise.resolve(p).then(data => {
 //     console.log('error:' + err)
 // })
 
-Promise.prototype.resolve = function (value) {
-    return Promise((resolve, reject) => {
-        if (value instanceof Promise) {
-            value.then(data => {
-                resolve(data)
-            }, err => {
-                resolve(err)
-            })
-        } else {
-            resolve(value)
-        }
-    })
-}
+Promise.resolve = function (value) {
+  return new Promise((resolve, reject) => {
+    if (value instanceof Promise) {
+      value.then(
+        (data) => {
+          resolve(data);
+        },
+        (err) => {
+          resolve(err);
+        },
+      );
+    } else {
+      resolve(value);
+    }
+  });
+};
